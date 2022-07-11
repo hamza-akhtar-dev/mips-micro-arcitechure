@@ -1,6 +1,9 @@
 # MIPS Single Cycle CPU
-## Block Diagram
-<img src="single_cycle_block_diagram.png"/>
+## Single Cycle Microarchitecture Block Diagram 
+<img src="single-cycle-Microarchitecture/single_cycle_block_diagram.png"/>
 
 ## Simulation
-<img src="single_cycle_mips_sim.png"/>
+<img src="single-cycle-Microarchitecture/single_cycle_mips_sim.png"/>
+
+## Pipelined Microarchitecture Block Diagram 
+<img src="Pipelined-MicroArchitecture/pipelined_block_diagram.png"/>
