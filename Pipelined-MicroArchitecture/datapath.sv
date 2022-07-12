@@ -4,36 +4,49 @@ module datapath(
     input logic alusrc, regdst,
     input logic regwrite, jump,
     input logic [2:0] alucontrol,
-    output logic zero,
-    output logic [31:0] pc,
-    input logic [31:0] instr,
-    output logic [31:0] aluout, writedata,
-    input logic [31:0] readdata
+    input logic [31:0] ReadDataM,
+    input logic [31:0] InstrF,
+    output logic ZeroM,
+    output logic [31:0] PC,
+    output logic [31:0] ALUOutM, WriteDataM
 );
 
-logic [4:0] writereg;
-logic [31:0] pcnext, pcnextbr, pcplus4, pcbranch;
-logic [31:0] signimm, signimmsh;
-logic [31:0] srca, srcb;
-logic [31:0] result;
+//Fetch
 
-// next PC logic
-flopr #(32) pcreg(clk, reset, pcnext, pc);
-adder pcadd1(pc, 32'b100, pcplus4);
-sl2 immsh(signimm, signimmsh);
-adder pcadd2(pcplus4, signimmsh, pcbranch);
-mux2 #(32) pcbrmux(pcplus4, pcbranch, pcsrc, pcnextbr);
-mux2 #(32) pcmux(pcnextbr, {pcplus4[31:28], instr[25:0], 2'b00}, jump, pcnext);
+mux2 #(32) pcmux(PCPlus4F, PCBranch, pcsrc, PCNext);
 
-// register file logic
-regfile rf(clk, regwrite, instr[25:21], instr[20:16], writereg, result, srca, writedata);
+flopr #(32) pcreg(clk, reset, PCNext, PC);
 
-mux2 #(5) wrmux(instr[20:16], instr[15:11], regdst, writereg);
-mux2 #(32) resmux(aluout, readdata, memtoreg, result);
-signext se(instr[15:0], signimm);
+adder pcadd1(PC, 32'b100, PCPlus4F);
 
-// ALU logic
-mux2 #(32) srcbmux(writedata, signimm, alusrc, srcb);
-alu alu(srca, srcb, alucontrol, aluout, zero);
+f_d pipereg1 (clk, reset, InstrF, PCPlus4F, InstrD, PCPlus4D)
+
+//Decode
+
+regfile rf(clk, regwrite, InstrD[25:21], InstrD[20:16], writereg, result, ReadData1D, ReadData2D);
+
+signext se(instr[15:0], SignImmD);
+
+//Execute
+
+d_e pipereg2 (clk, reset, InstrD[20:16], InstrD[15:11], ReadData1D, ReadData2D, SignImmD, PCPlus4D, RtE, RdE, SrcAE, WriteDataE, SignImmE, PCPlus4E)
+
+mux2 #(32) srcbmux(WriteDataE, SignImmE, alusrc, SrcBE);
+
+alu alu(SrcAE, SrcBE, alucontrol, ALUOutE, ZeroE);
+
+sl2 immsh(SignImmE, SignImmShE);
+
+adder pcadd2(PCPlus4E, SignImmShE, PCBranchE);
+
+//Memory
+
+e_m pipereg3 (clk, reset, ZeroE, ALUOutE, WriteDataE, PCBranchE, ZeroM, ALUOutM, WriteDataM, PCBranchM);
+
+//Writeback
+
+m_w pipereg4 (clk, reset, ALUOutM, ReadDataM, ALUOutW, ReadDataW);
+
+mux2 #(32) resmux(ALUOutW, ReadDataW, memtoreg, ResultW);
 
 endmodule

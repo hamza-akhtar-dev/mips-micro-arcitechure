@@ -1,4 +1,4 @@
-module f_d (
+module m_w (
     input logic clk, reset,
     input logic [31:0] ALUOutM, ReadDataM,
     output logic [31:0] ALUOutW, ReadDataW

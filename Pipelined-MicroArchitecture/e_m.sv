@@ -1,4 +1,4 @@
-module f_d (
+module e_m (
     input logic clk, reset, ZeroE,
     input logic [31:0] ALUOutE, WriteDataE, PCBranchE,
     output logic ZeroM,
