@@ -13,26 +13,27 @@ module datapath(
 );
 
 logic [7:0] controls_d;
+logic [31:0] InstrD;
 
 //Fetch
 
-mux2 #(32) pcmux(PCPlus4F, PCBranch, pcsrc_m, PCNext);
+mux2 #(32) pcmux(PCPlus4F, PCBranchM, pcsrc_m, PCNext);
 
 flopr #(32) pcreg(clk, reset, PCNext, PC);
 
 adder pcadd1(PC, 32'b100, PCPlus4F);
 
-f_d pipereg1 (clk, reset, InstrF, PCPlus4F, InstrD, PCPlus4D)
+f_d pipereg1 (clk, reset, InstrF, PCPlus4F, InstrD, PCPlus4D);
 
 //Decode
 
 regfile rf(clk, regwrite_w, InstrD[25:21], InstrD[20:16], WriteRegW, ResultW, ReadData1D, ReadData2D);
 
-signext se(instr[15:0], SignImmD);
+signext se(InstrD[15:0], SignImmD);
 
 //Execute
 
-d_e pipereg2 (clk, reset, {regwrite_d, memtoreg_d, memwrite_d, branch_d, alucontrol_d, alusrc_d, regdst_d}, InstrD[20:16], InstrD[15:11], ReadData1D, ReadData2D, SignImmD, PCPlus4D, {regwrite_e, memtoreg_e, memwrite_e, branch_e, alucontrol_e, alusrc_e, regdst_e}, RtE, RdE, SrcAE, WriteDataE, SignImmE, PCPlus4E)
+d_e pipereg2 (clk, reset, {regwrite_d, memtoreg_d, memwrite_d, branch_d, alucontrol_d, alusrc_d, regdst_d}, InstrD[20:16], InstrD[15:11], ReadData1D, ReadData2D, SignImmD, PCPlus4D, {regwrite_e, memtoreg_e, memwrite_e, branch_e, alucontrol_e, alusrc_e, regdst_e}, RtE, RdE, SrcAE, WriteDataE, SignImmE, PCPlus4E);
 
 mux2 #(5) wrmux(RtE, RdE, regdst_e, WriteRegE);
 
@@ -47,7 +48,7 @@ adder pcadd2(PCPlus4E, SignImmShE, PCBranchE);
 
 //Memory
 
-e_m pipereg3 (clk, reset, {regwrite_e, memtoreg_e, memwrite_e, branch_e}, ZeroE, ALUOutE, WriteDataE, PCBranchE, WriteRegE, {regwrite_m, memtoreg_m, memwrite_m, branch_m} ZeroM, ALUOutM, WriteDataM, PCBranchM, WriteRegM);
+e_m pipereg3 (clk, reset, {regwrite_e, memtoreg_e, memwrite_e, branch_e}, ZeroE, ALUOutE, WriteDataE, PCBranchE, WriteRegE, {regwrite_m, memtoreg_m, memwrite_m, branch_m}, ZeroM, ALUOutM, WriteDataM, PCBranchM, WriteRegM);
 
 assign pcsrc_m = branch_m & ZeroM;
 
