@@ -23,7 +23,7 @@ f_d pipereg1 (clk, reset, InstrF, PCPlus4F, InstrD, PCPlus4D)
 
 //Decode
 
-regfile rf(clk, regwrite, InstrD[25:21], InstrD[20:16], writereg, result, ReadData1D, ReadData2D);
+regfile rf(clk, regwrite, InstrD[25:21], InstrD[20:16], WriteRegW, ResultW, ReadData1D, ReadData2D);
 
 signext se(instr[15:0], SignImmD);
 
@@ -41,11 +41,11 @@ adder pcadd2(PCPlus4E, SignImmShE, PCBranchE);
 
 //Memory
 
-e_m pipereg3 (clk, reset, ZeroE, ALUOutE, WriteDataE, PCBranchE, ZeroM, ALUOutM, WriteDataM, PCBranchM);
+e_m pipereg3 (clk, reset, ZeroE, ALUOutE, WriteDataE, WriteRegE, PCBranchE, ZeroM, ALUOutM, WriteDataM, WriteRegM, PCBranchM);
 
 //Writeback
 
-m_w pipereg4 (clk, reset, ALUOutM, ReadDataM, ALUOutW, ReadDataW);
+m_w pipereg4 (clk, reset, ALUOutM, ReadDataM, WriteRegM, ALUOutW, ReadDataW, WriteRegW);
 
 mux2 #(32) resmux(ALUOutW, ReadDataW, memtoreg, ResultW);
 
